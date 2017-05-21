@@ -207,7 +207,11 @@ namespace XO
             return result;
         }
 
-        public void SaveStatistics(string user_name_win = "")
+        /// <summary>
+        /// Записываем статистику в xml-файл
+        /// </summary>
+        /// <param name="user_name_win">Имя победителя</param>
+        public void SaveStatisticsXml(string user_name_win = "")
         {
             try
             {
@@ -238,6 +242,54 @@ namespace XO
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Записываем статистику в json-файл
+        /// </summary>
+        /// <param name="user_name_win">Имя победителя</param>
+        public void SaveStatisticsJson(string user_name_win = "")
+        {
+            try
+            {
+                var data = new List<Statistics>();
+                // Формируем к файлу статистики в одной папке с исполняемым файлом
+                string filePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                                               "statistics.json");
+
+                // Проверяем наличие файла по сформированному пути
+                if (File.Exists(filePath))
+                {
+                    data = JSONSerialzer.GetData(filePath);
+                }
+
+                // Добавляем запись последней игры
+                data.Add(new Statistics()
+                {
+                    Date = DateTime.Now,
+                    Result = game_status,
+                    UserName = user_name_win,
+                    StepCounter = StepCount
+                });
+
+                // Записываем данные в файл
+                JSONSerialzer.SetData(filePath, data);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Записываем статистику в файлы
+        /// </summary>
+        /// <param name="user_name_win"></param>
+        public void SaveStatistics(string user_name_win = "")
+        {
+            // Для теста обоих реализаций xml и json
+            SaveStatisticsXml(user_name_win);
+            SaveStatisticsJson(user_name_win);
         }
     }
 }
