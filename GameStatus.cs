@@ -3,7 +3,7 @@
     /// <summary>
     /// Состояние игры
     /// </summary>
-    enum GameStatus
+    public enum GameStatus
     {
         /// <summary>
 		/// Игра не началась

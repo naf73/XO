@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace XO
@@ -184,12 +185,15 @@ namespace XO
                     throw new XOException("Игра еще не началась");
                 case GameStatus.PlayerXWin:
                     message = player.GetPlayerName() + " выиграл";
+                    logic.SaveStatistics(player.GetPlayerName());
                     break;
                 case GameStatus.PlayerOWin:
                     message = player.GetPlayerName() + " выиграл";
+                    logic.SaveStatistics(player.GetPlayerName());
                     break;
                 case GameStatus.NoWin:
                     message = "Ничья";
+                    logic.SaveStatistics();
                     break;
             }
 
@@ -590,7 +594,43 @@ namespace XO
             }
             UpdateGame(player);
         }
-        
+
+        /// <summary>
+        /// Показывает окно статистики
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btn_show_statistics_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Формируем к файлу статистики в одной папке с исполняемым файлом
+                string filePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                                               "statistics.xml");
+                // Проверяем наличие файла
+                if (File.Exists(filePath))
+                {
+                    // Получаем данные статистики
+                    var data = XMLSerialzer.GetData(filePath);
+
+                    FormStatistics statform = new FormStatistics();
+
+                    // Загружаем данные в таблицу
+                    statform.dataGridView.DataSource = data;
+                    // Показываем форму со статистикой
+                    statform.ShowDialog();
+                }
+                else
+                {
+                    MessageBox.Show("Статистика пока нет", game_name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
         #endregion
     }
 }

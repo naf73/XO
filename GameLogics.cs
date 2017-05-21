@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System;
 
 namespace XO
 {
@@ -28,11 +30,17 @@ namespace XO
         private List<int[]> win_combinations;
 
         /// <summary>
+        /// Счетчик ходов за 1 игру
+        /// </summary>
+        private int StepCount;
+
+        /// <summary>
         /// Конструктор
         /// </summary>
         public GameLogics()
         {
             game_status = GameStatus.NotStarted;
+            StepCount = 0;
 
             // Инициализируем игровое поле
             cells = new List<CellStatus>();
@@ -61,6 +69,7 @@ namespace XO
         public void GameStart()
         {
             game_status = GameStatus.InProgress;
+            StepCount = 0;
 
             for (int i = 0; i < size * size; i++)
             {
@@ -152,6 +161,7 @@ namespace XO
                 if (cells[index] == CellStatus.Empty)
                 {
                     cells[index] = mark;
+                    StepCount++;
                 }
                 else
                 {
@@ -197,5 +207,37 @@ namespace XO
             return result;
         }
 
+        public void SaveStatistics(string user_name_win = "")
+        {
+            try
+            {
+                var data = new List<Statistics>();
+                // Формируем к файлу статистики в одной папке с исполняемым файлом
+                string filePath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                                               "statistics.xml");
+                
+                // Проверяем наличие файла по сформированному пути
+                if (File.Exists(filePath))
+                {
+                    data = XMLSerialzer.GetData(filePath);
+                }
+
+                // Добавляем запись последней игры
+                data.Add(new Statistics()
+                {
+                    Date = DateTime.Now,
+                    Result = game_status,
+                    UserName = user_name_win,
+                    StepCounter = StepCount
+                });
+
+                // Записываем данные в файл
+                XMLSerialzer.SetData(filePath, data);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
     }
 }

@@ -52,6 +52,7 @@
             this.cmb_player_1_mark = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.ComputerTimer = new System.Windows.Forms.Timer(this.components);
+            this.btn_show_statistics = new System.Windows.Forms.Button();
             this.GameField.SuspendLayout();
             this.gbx_type_comp.SuspendLayout();
             this.SuspendLayout();
@@ -329,11 +330,23 @@
             // 
             this.ComputerTimer.Tick += new System.EventHandler(this.CompTimer_Tick);
             // 
+            // btn_show_statistics
+            // 
+            this.btn_show_statistics.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_show_statistics.Location = new System.Drawing.Point(403, 264);
+            this.btn_show_statistics.Name = "btn_show_statistics";
+            this.btn_show_statistics.Size = new System.Drawing.Size(102, 41);
+            this.btn_show_statistics.TabIndex = 8;
+            this.btn_show_statistics.Text = "Статистика";
+            this.btn_show_statistics.UseVisualStyleBackColor = true;
+            this.btn_show_statistics.Click += new System.EventHandler(this.btn_show_statistics_Click);
+            // 
             // FormGame
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(514, 362);
+            this.Controls.Add(this.btn_show_statistics);
             this.Controls.Add(this.gbx_type_comp);
             this.Controls.Add(this.cmb_player_2);
             this.Controls.Add(this.label4);
@@ -382,6 +395,7 @@
         private System.Windows.Forms.ComboBox cmb_player_1_mark;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Timer ComputerTimer;
+        private System.Windows.Forms.Button btn_show_statistics;
     }
 }
 
