@@ -149,7 +149,18 @@ namespace XO
             // === Добавляем маркер на поле
             if (index > -1 && index < cells.Count)
             {
-                cells[index] = mark;
+                if (cells[index] == CellStatus.Empty)
+                {
+                    cells[index] = mark;
+                }
+                else
+                {
+                    throw new XOFilledCellException()
+                    {
+                        row = index % 3 + 1,
+                        col = index / 3 + 1
+                    };
+                }
             }
 
             // === Проверяем игру на выигрыш игрока

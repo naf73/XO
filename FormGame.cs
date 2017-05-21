@@ -23,7 +23,7 @@ namespace XO
         public FormGame()
         {
             InitializeComponent();
-            InitField(false);
+            InitField();
             logic = new GameLogics();
             GameSetting(true);
             // Настройки по умолчанию
@@ -180,6 +180,8 @@ namespace XO
             string message = String.Empty;
             switch (logic.GetGameStatus())
             {
+                case GameStatus.NotStarted:
+                    throw new XOException("Игра еще не началась");
                 case GameStatus.PlayerXWin:
                     message = player.GetPlayerName() + " выиграл";
                     break;
@@ -195,26 +197,24 @@ namespace XO
                 logic.GetGameStatus() == GameStatus.PlayerOWin ||
                 logic.GetGameStatus() == GameStatus.NoWin)
             {
-                if(MessageBox.Show(message, game_name, MessageBoxButtons.OK, MessageBoxIcon.Information) == DialogResult.OK)
+                if (MessageBox.Show(message, game_name, MessageBoxButtons.OK, MessageBoxIcon.Information) == DialogResult.OK)
                 {
                     logic.GameReset();
-                    InitField(false);
+                    InitField();
                     GameSetting(true);
                 }
             }
-
         }
 
         /// <summary>
         /// Метод инициализирует игровое поле
         /// </summary>
         /// <param name="enabled">true - кнопки активны, false - кнопки не активны</param>
-        public void InitField(bool enabled)
+        public void InitField()
         {
             int i = 0;
             foreach (Button btn in GameField.Controls)
             {
-                btn.Enabled = enabled;
                 btn.Text = String.Empty;
                 btn.Tag = i;
                 i++;
@@ -315,7 +315,30 @@ namespace XO
                 ((Computers)player2).SetComputerLevel(level);
             }
         }
-        
+
+        /// <summary>
+        /// Старт игры
+        /// </summary>
+        private void GameStart()
+        {
+            // ===
+            if (logic.GetGameStatus() == GameStatus.InProgress)
+            {
+                throw new XOException("Текущая игра не закончена");
+            }
+
+            // ===
+            if (logic.GetGameStatus() == GameStatus.NotStarted)
+            {
+                InitField();
+                GameSetting(false);
+                logic.GameStart();
+                player_current = (CurrentPlayer)Properties.Settings.Default.player_current;
+                SetPlayersName();
+                FirstStep();
+            }
+        }
+
         #endregion
 
         #region События формы
@@ -327,40 +350,52 @@ namespace XO
         /// <param name="e"></param>
         private void button_Click(object sender, EventArgs e)
         {
-            IPlayer player;
-            if (player_current == CurrentPlayer.Player1)
-            {
-                player = player1;
-            }
-            else
-            {
-                player = player2;
-            }
 
-            if (player.GetPlayerType() == PlayerType.Human)
+            try
             {
-                ((Players)player).SetIndex(Convert.ToInt32(((Button)sender).Tag));
-            }
+                IPlayer player;
+                if (player_current == CurrentPlayer.Player1)
+                {
+                    player = player1;
+                }
+                else
+                {
+                    player = player2;
+                }
 
-            // Обновляем состояние игры после хода игрока
-            UpdateGame(player);
+                if (player.GetPlayerType() == PlayerType.Human)
+                {
+                    ((Players)player).SetIndex(Convert.ToInt32(((Button)sender).Tag));
+                }
 
-            // Меняем очередь хода
-            if (player_current == CurrentPlayer.Player1)
-            {
-                player = player1;
-            }
-            else
-            {
-                player = player2;
-            }
-
-            // Делаем ход компьютером
-            if(player.GetPlayerType() == PlayerType.Computer)
-            {
+                // Обновляем состояние игры после хода игрока
                 UpdateGame(player);
-            }
 
+                // Меняем очередь хода
+                if (player_current == CurrentPlayer.Player1)
+                {
+                    player = player1;
+                }
+                else
+                {
+                    player = player2;
+                }
+
+                // Делаем ход компьютером
+                if (player.GetPlayerType() == PlayerType.Computer)
+                {
+                    UpdateGame(player);
+                }
+            }
+            catch (XOFilledCellException ex)
+            {
+                string mes = String.Format("Ячейка {0} {1} занята", ex.col, ex.row);
+                MessageBox.Show(mes, game_name, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (XOException ex)
+            {
+                MessageBox.Show(ex.Message, game_name, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         /// <summary>
@@ -370,18 +405,19 @@ namespace XO
         /// <param name="e"></param>
         private void btn_start_Click(object sender, EventArgs e)
         {
-            if (logic.GetGameStatus() == GameStatus.NotStarted)
+            try
             {
-                InitField(true);
-                GameSetting(false);
-                logic.GameStart();
-                player_current = (CurrentPlayer)Properties.Settings.Default.player_current;
-                SetPlayersName();
-                FirstStep();
+                GameStart();
             }
-            else
+            catch (XOException ex)
             {
-                //throw new Exception();
+                string mes = ex.Message + Environment.NewLine + "Начать новую игру?";
+                if(MessageBox.Show(mes, game_name, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    logic.GameReset();
+                    InitField();
+                    GameSetting(true);
+                }
             }
         }
 
